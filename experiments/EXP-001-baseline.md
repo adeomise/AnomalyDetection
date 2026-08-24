@@ -2,28 +2,28 @@
 
 ## Objective
 
-Reproduce the selected external baseline repository under its original conditions before applying project-specific modifications.
+Reproduce the selected external aerial Fire Detection baseline repository under its original conditions before applying project-specific modifications.
 
 ## Source
 
-Repository: TODO
-Commit / Tag: TODO
+Repository: `https://github.com/tim3in/Fire-Detection-Drone.git`
+Commit / Tag: `e90632a25a07ea1f2137681741e3d9bfc8f1cb3c` / No tag found
 
 ## Dataset
 
-Dataset: TODO
-Classes: TODO
-Split: TODO
+Dataset: FLAME-derived Roboflow project `tim-4ijf0/drone-fire-detection-byija`, version 1
+Classes: `0: fire` (verify against generated `data.yaml`)
+Split: Roboflow-generated train/valid/test split; exact structure and counts TODO
 
 ## Model
 
-Model: TODO
-Pretrained weight: TODO
+Model: Ultralytics YOLOv8 medium (`yolov8m.pt`)
+Pretrained weight: `yolov8m.pt`; output `runs/detect/train/weights/best.pt`
 
 ## Training Configuration
 
-Image size: TODO
-Epochs: TODO
+Image size: `800`
+Epochs: `50`
 Batch size: TODO
 Optimizer: TODO
 Learning rate: TODO
@@ -41,8 +41,8 @@ mAP50-95: TODO
 
 ## Reproduction Status
 
-Not run yet.
+Not ready - environment, exported dataset structure, license, and reproducible dependency details remain incomplete.
 
 ## Notes
 
-TODO: Link to `docs/baseline_analysis.md` and record the exact source files or commands used after the baseline is verified. Upstream source remains read-only during this experiment.
+TODO: Obtain and verify the Roboflow export, environment details, and license status before running EXP-001. See `docs/baseline_analysis.md` for source findings. Upstream source remains read-only during this experiment.

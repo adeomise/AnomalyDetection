@@ -1,35 +1,42 @@
 # Baseline Analysis
 
-This document records facts needed to reproduce a candidate upstream Fire Detection repository. It must be based on the upstream README, notebooks, scripts, configuration, requirements, and a specific commit or tag. Unverified values remain `TODO` or `Not specified`.
+This document records facts extracted from `tim3in/Fire-Detection-Drone` at commit `e90632a25a07ea1f2137681741e3d9bfc8f1cb3c`. The upstream repository was inspected read-only; training and inference were not executed.
 
 ## 1. Repository Information
 
-Repository: TODO — identify baseline repository
-URL: TODO — verify URL
-Commit / Tag: TODO — record exact revision
-License: TODO — verify license
+Repository: `tim3in/Fire-Detection-Drone`
+URL: https://github.com/tim3in/Fire-Detection-Drone.git
+Branch: `main`
+Commit / Tag: `e90632a25a07ea1f2137681741e3d9bfc8f1cb3c` / No tag found
+License: TODO - no LICENSE, COPYING, or equivalent file was found; verify repository metadata before integration or redistribution
 
 ## 2. Model
 
-YOLO version: TODO — verify
-Framework: TODO — verify
-Pretrained weight: TODO — verify
-Input image size: TODO — verify
+YOLO version: YOLOv8
+Framework: Ultralytics
+Pretrained weight: `yolov8m.pt`; generated `best.pt` is used for inference
+Input image size: `800` in the training command; inference size is not specified
 
 ## 3. Dataset
 
-Dataset name: TODO — verify
-Dataset source: TODO — verify source and access method
-Dataset type: TODO — verify
-Classes: TODO — verify names and count
-Label format: TODO — verify
+Dataset name: FLAME dataset, consumed through Roboflow project `drone-fire-detection-byija`, version 1
+Dataset source: FLAME citation/DOI in upstream README; Roboflow workspace `tim-4ijf0`, project `drone-fire-detection-byija`, version 1
+Dataset type: Object detection / bounding box after Roboflow YOLOv8 export. The original FLAME label type is not specified by this repository.
+Image source/viewpoint: Aerial imagery from drones/UAVs, according to the upstream README citation
+Classes: `0: fire`, explicitly defined in `Supervision_Video_Inferencing.ipynb`; verify against generated YAML
+Label format: YOLO format requested by `download("yolov8")`; exact exported label files are not included
 
 ## 4. Dataset Structure
 
-Not specified until the upstream source is identified and inspected.
+The notebook references `{dataset.location}/data.yaml` and `{dataset.location}/test/images`. The Roboflow-generated export is not committed, so the exact directory tree, split paths, and counts cannot be verified without obtaining the export.
 
 ```text
-TODO — record the exact upstream directory structure; do not normalize it by assumption.
+{dataset.location}/
+├── data.yaml                 # referenced by training/validation commands
+├── train/                    # exact path: TODO - verify export
+├── valid/                    # exact path: TODO - verify export
+└── test/
+	└── images/              # referenced by prediction command
 ```
 
 Required items to verify:
@@ -43,66 +50,95 @@ Required items to verify:
 
 ## 5. Training Configuration
 
-Epochs: TODO — verify
-Batch size: TODO — verify
-Image size: TODO — verify
+Model: `yolov8m.pt`
+Epochs: `50`
+Batch size: Not specified
+Image size: `800`
 Optimizer: TODO — verify
 Learning rate: TODO — verify
 Augmentation: TODO — verify
+Patience: Not specified
+Workers: Not specified
+Device: Notebook checks `nvidia-smi`; explicit training device is not specified
+Confidence threshold: `0.25` for test-image prediction
+IoU threshold: Not specified
 
 ## 6. Training Procedure
 
-TODO — summarize the original README, notebook, or script execution order after inspection. Do not add a command until it has been confirmed in the upstream source.
+1. Check NVIDIA availability with `nvidia-smi`.
+2. Install `ultralytics==8.0.20`.
+3. Download Roboflow project version 1 in YOLOv8 format.
+4. Train `yolov8m.pt` with `epochs=50`, `imgsz=800`, and `plots=True`.
+5. Validate `runs/detect/train/weights/best.pt` using the downloaded `data.yaml`.
+6. Predict on `{dataset.location}/test/images` with `conf=0.25`.
+7. Download `best.pt` from the notebook environment.
 
 Training configuration sources:
 
-- README section: TODO
-- Notebook: TODO
-- Script/config: TODO
-- Commit: TODO
+- README: dataset citation and notebook execution order
+- Notebook: `drone_fire_detection_yolov8.ipynb`, cells 1-21
+- Training: cell 9; validation: cell 15; prediction: cell 17
+- Commit: `e90632a25a07ea1f2137681741e3d9bfc8f1cb3c`
 
 ## 7. Inference Procedure
 
-TODO — summarize the inference method provided by the upstream source. Do not invent a command or input format.
+Image: `Supervision_Image_Inferencing.ipynb` loads `best.pt`, predicts on `/content/fire_image.png`, and annotates boxes with class and confidence.
+
+Video: `Supervision_Video_Inferencing.ipynb` loads `/content/best.pt`, reads `/content/fire.mp4` frame by frame, annotates detections, and writes `/content/fire_result.mp4`.
+
+Realtime: No live camera or network stream is provided. The video notebook includes ByteTrack-related setup for file-based processing.
 
 ## 8. Outputs
 
-Weights: TODO — verify
-Metrics: TODO — verify
-Result directory: TODO — verify
+Weights: `runs/detect/train/weights/best.pt` generated by training; no weight file is committed
+Metrics: Validation is invoked, but no standalone metric record is included
+Result directory: `runs/detect/train/` and `runs/detect/predict/`; video output `/content/fire_result.mp4`
 
 ## 9. Reported Performance
 
-Precision: TODO — verify
-Recall: TODO — verify
-mAP50: TODO — verify
-mAP50-95: TODO — verify
+Precision: Not reported as a verified standalone value
+Recall: Not reported as a verified standalone value
+mAP50: Not reported as a verified standalone value
+mAP50-95: Not reported as a verified standalone value
 
 Only values explicitly reported by the upstream source may be entered here.
 
 ## 10. Known Limitations
 
-TODO — record only limitations stated in the upstream README or source. Do not infer limitations from the repository name alone.
+The upstream repository does not document false-positive, small-object, lighting, viewpoint, or hardware limitations. The Roboflow API key is a placeholder (`YOUR_API_KEY`), and the exported dataset is not committed.
 
 ## 11. Reproduction Requirements
 
-- Identified upstream repository URL
+- Isolated checkout at `C:\Fire-Detection-Drone-upstream`
 - Pinned upstream commit or tag
 - Verified license and attribution requirements
-- Verified Python, framework, and dependency requirements
-- Verified dataset source and exact directory structure
-- Verified class definitions and label format
-- Verified pretrained weight source and expected location
-- Verified original training configuration and command
+- Roboflow access and the exact version 1 export
+- Generated `data.yaml`, image/label paths, split counts, and class verification
+- `yolov8m.pt` and resulting `best.pt`
+- Python, PyTorch, CUDA, Ultralytics, Roboflow, Supervision, and ByteTrack dependency verification
+- Original training notebook and command conditions
 - A separate reproduction record in `experiments/EXP-001-baseline.md`
 
 ## 12. Open Questions
 
-- TODO — Which upstream repository is the selected baseline?
-- TODO — Which commit or tag will be reproduced?
-- TODO — Is the license compatible with the planned project distribution?
-- TODO — What are the exact environment, dataset, model, and training requirements?
-- TODO — Has the original baseline been reproduced without project-specific changes?
+- TODO - Verify the upstream license through repository metadata.
+- TODO - Confirm the exact Roboflow export tree, YAML contents, and split counts.
+- TODO - Confirm original FLAME labels and any conversion before the Roboflow export.
+- TODO - Confirm Python, PyTorch, CUDA, Roboflow, Supervision, and ByteTrack versions.
+- TODO - Determine whether saved notebook outputs contain valid upstream metrics.
+
+## Dataset Requirements for Team C
+
+Required dataset: FLAME-derived Roboflow project `tim-4ijf0/drone-fire-detection-byija`, version 1
+Required label type: YOLO object-detection bounding boxes
+Required directory structure: Roboflow-generated structure referenced by `{dataset.location}/data.yaml`; exact tree is TODO until export is obtained
+Classes: `0: fire` confirmed in the video notebook; verify against generated `data.yaml`
+Train split: Required; exact path and count TODO
+Validation split: Required; exact path and count TODO
+Test split: Required at `{dataset.location}/test/images`; exact labels and count TODO
+Required YAML/config: `{dataset.location}/data.yaml`
+Conversion required: Roboflow export to YOLOv8 is used; any FLAME-to-Roboflow conversion is not present upstream
+Missing items: API access, exported dataset, exact split structure/counts, YAML contents, label verification, and reproducible dependency versions
 
 ## Source Boundary
 

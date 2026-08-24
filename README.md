@@ -77,7 +77,7 @@ Start with [`docs/environment_setup.md`](docs/environment_setup.md), then consul
 
 ## Open-source / Dataset Attribution
 
-External repositories, datasets, papers, licenses, versions, and changes will be recorded in [`docs/open_source_references.md`](docs/open_source_references.md) and [`external/README.md`](external/README.md). No source has been selected or cloned yet.
+External repositories, datasets, papers, licenses, versions, and changes will be recorded in [`docs/open_source_references.md`](docs/open_source_references.md) and [`external/README.md`](external/README.md). The specified upstream repository has been inspected at a pinned commit; see [`docs/baseline_analysis.md`](docs/baseline_analysis.md) for reproduction status.
 
 ## Current Status
 
