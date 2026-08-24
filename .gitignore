@@ -33,6 +33,7 @@ runs/
 experiments/*
 !experiments/README.md
 !experiments/.gitkeep
+!experiments/EXP-*.md
 *.tmp
 *.temp
 
