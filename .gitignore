@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and local settings
+.vscode/
+.idea/
+
+# Environment variables and local secrets
+.env
+.env.*
+
+# Datasets and generated YOLO outputs
+data/raw/*
+data/interim/*
+data/processed/*
+data/negatives/*
+data/splits/*
+runs/
+
+# Model weights
+*.pt
+*.pth
+*.onnx
+
+# Experiment outputs and temporary files
+experiments/*
+!experiments/README.md
+!experiments/.gitkeep
+*.tmp
+*.temp
+
+# Large video files
+*.mp4
+*.avi
+*.mov
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keep repository placeholders
+!**/README.md
+!**/.gitkeep
