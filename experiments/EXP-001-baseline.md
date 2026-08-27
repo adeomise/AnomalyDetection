@@ -84,3 +84,11 @@ TODO: Obtain and verify the Roboflow export, environment details, and license st
 - Training not run
 
 Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction dependencies. Their versions were not specified by the upstream notebook.
+
+### Attempt 3
+
+- Dependency resolution failed before environment verification.
+- The PyTorch CUDA 11.8 index was also used for general dependencies and exposed only `idna==3.4` to uv.
+- Roboflow `1.4.1` requires `idna>=3.7`; requests `2.28.1` permits `idna>=2.5,<4`, so the packages have a compatible intersection.
+- This was an index-scoping failure, not a Roboflow/Ultralytics incompatibility.
+- Training was not run.
