@@ -12,8 +12,12 @@ Commit / Tag: `e90632a25a07ea1f2137681741e3d9bfc8f1cb3c` / No tag found
 ## Dataset
 
 Dataset: FLAME-derived Roboflow project `tim-4ijf0/drone-fire-detection-byija`, version 1
-Classes: `0: fire` (verify against generated `data.yaml`)
-Split: Roboflow-generated train/valid/test split; exact structure and counts TODO
+Classes: `0: fire`
+Split: Roboflow-generated train/val/test split
+
+- train: `106`
+- val: `31`
+- test: `15`
 
 ## Model
 
@@ -24,7 +28,8 @@ Pretrained weight: `yolov8m.pt`; output `runs/detect/train/weights/best.pt`
 
 Image size: `800`
 Epochs: `50`
-Batch size: `16` (resolved upstream training output)
+Batch size: `16`
+Model: pretrained `yolov8m.pt`
 Optimizer: TODO - not specified by upstream command
 Learning rate: TODO - not specified by upstream command
 
@@ -34,33 +39,37 @@ None.
 
 ## Results
 
-Precision: approximately `0.993`
-Recall: approximately `0.979`
-mAP50: approximately `0.989`
-mAP50-95: approximately `0.628`
+Best epoch: `46`
+Precision: `0.99359`
+Recall: `0.97872`
+mAP50: `0.98924`
+mAP50-95: `0.62694`
+best.pt SHA-256: `7b1fe847ea81bf5cd3647da1d457510b4a87d956be9eed4ab61c92db817f5ef2`
+
+These metrics were selected by `--finalize-run` from `results.csv` using the Ultralytics `8.0.20` fitness criterion for the best epoch.
 
 ## Reproduction Status
 
-Not ready - local environment, exported dataset structure, license, and reproducible dependency details remain incomplete.
+**EXP-001: Completed**
 
 ## Environment Checklist
 
-- [ ] Python reproduction version selected
-- [ ] Isolated virtual environment created
-- [ ] PyTorch version selected
-- [ ] GPU available from PyTorch
-- [ ] Ultralytics 8.0.20 installed
-- [ ] Roboflow client available
-- [ ] Dataset version 1 downloaded
-- [ ] `data.yaml` inspected
-- [ ] train/valid/test split verified
-- [ ] Class ID verified
-- [ ] `yolov8m.pt` source confirmed
+- [x] Python reproduction version selected
+- [x] Isolated virtual environment created
+- [x] PyTorch version selected
+- [x] GPU available from PyTorch
+- [x] Ultralytics 8.0.20 installed
+- [x] Roboflow client available
+- [x] Dataset version 1 downloaded
+- [x] `data.yaml` inspected
+- [x] train/valid/test split verified
+- [x] Class ID verified
+- [x] `yolov8m.pt` source confirmed
 - [x] Upstream code remains unchanged
 
 ## Notes
 
-TODO: Obtain and verify the Roboflow export, environment details, and license status before running EXP-001. See `docs/baseline_analysis.md` for source findings. Upstream source remains read-only during this experiment.
+The Roboflow export, normalized dataset configuration, environment, training artifacts, and final metrics were verified for EXP-001. See `docs/baseline_analysis.md` for source findings. Upstream source remained read-only throughout the experiment.
 
 ### Initial Colab automation test
 
@@ -108,8 +117,12 @@ The first dataset preparation run downloaded the expected split directories but 
 
 ## Actual Training Run
 
+- Clean Colab environment setup and verifier passed.
 - All 50 epochs completed successfully in Colab.
 - `runs/detect/train2/weights/best.pt` and `last.pt` were created.
-- Final best.pt validation completed with the metrics recorded above.
+- `best.pt` validation completed successfully.
 - Post-processing then failed because Ultralytics `8.0.20` returns `None` from `model.train()`, while the launcher expected `results.save_dir`.
 - Plotting threads also reported `FreeTypeFont.getsize` errors caused by a newer Pillow release; the EXP-001 environment now pins Pillow `9.5.0` without changing Ultralytics.
+- Pillow `9.5.0` compatibility was confirmed.
+- `--finalize-run` selected the best epoch metrics from `results.csv` using the Ultralytics `8.0.20` fitness criterion and created `artifacts/exp001/result.json`.
+- Training was not rerun during finalization.
