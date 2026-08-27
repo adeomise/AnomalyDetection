@@ -18,6 +18,7 @@ import yaml
 EXPECTED_ULTRALYTICS = "8.0.20"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 IMAGE_SUFFIXES = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
+NORMALIZED_DATA_YAML = "data.exp001-normalized.yaml"
 
 
 def load_config(config_path: Path) -> dict[str, Any]:
@@ -143,6 +144,40 @@ def validate_prepared_dataset(data_yaml: Path, config: dict[str, Any]) -> None:
         validate_split(split_name, resolve_path(str(dataset[split_name]), data_yaml))
 
 
+def normalize_data_yaml(dataset_root: Path, config: dict[str, Any]) -> Path:
+    dataset_root = dataset_root.resolve()
+    source_yaml = dataset_root / "data.yaml"
+    source = verify_class_mapping(config, source_yaml)
+    if "train" not in source:
+        raise ValueError("Original data.yaml does not define train.")
+    if "val" not in source and "valid" not in source:
+        raise ValueError("Original data.yaml must define val or valid.")
+
+    train_images = dataset_root / "train" / "images"
+    validation_candidates = (dataset_root / "valid" / "images", dataset_root / "val" / "images")
+    validation_images = next((path for path in validation_candidates if path.is_dir()), None)
+    if not train_images.is_dir():
+        raise FileNotFoundError(f"Dataset train image directory does not exist: {train_images}")
+    if validation_images is None:
+        raise FileNotFoundError(
+            f"Dataset validation image directory does not exist: {validation_candidates[0]} or {validation_candidates[1]}"
+        )
+
+    normalized = dict(source)
+    normalized.pop("valid", None)
+    normalized["train"] = str(train_images.resolve())
+    normalized["val"] = str(validation_images.resolve())
+    if "test" in source:
+        test_images = dataset_root / "test" / "images"
+        if not test_images.is_dir():
+            raise FileNotFoundError(f"Dataset test image directory does not exist: {test_images}")
+        normalized["test"] = str(test_images.resolve())
+
+    normalized_yaml = dataset_root / NORMALIZED_DATA_YAML
+    normalized_yaml.write_text(yaml.safe_dump(normalized, sort_keys=False), encoding="utf-8")
+    return normalized_yaml
+
+
 def download_dataset(config: dict[str, Any], api_key: str) -> Path:
     from roboflow import Roboflow
 
@@ -154,7 +189,7 @@ def download_dataset(config: dict[str, Any], api_key: str) -> Path:
         .version(dataset_config["version"])
         .download(dataset_config["format"])
     )
-    return Path(dataset.location) / "data.yaml"
+    return Path(dataset.location)
 
 
 def run_verification() -> None:
@@ -190,10 +225,12 @@ def main() -> None:
     if not api_key:
         raise RuntimeError("ROBOFLOW_API_KEY is not set; training is stopped.")
 
-    data_yaml = download_dataset(config, api_key)
+    dataset_root = download_dataset(config, api_key)
+    data_yaml = normalize_data_yaml(dataset_root, config)
     if args.prepare_only:
         validate_prepared_dataset(data_yaml, config)
-        print("Dataset location:", data_yaml.parent)
+        print("Dataset location:", dataset_root.resolve())
+        print("Normalized data.yaml:", data_yaml)
         print("EXP-001 dataset preparation: PASS")
         return
 

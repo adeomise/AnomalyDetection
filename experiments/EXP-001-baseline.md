@@ -103,3 +103,5 @@ Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction depende
 ## Dataset Preparation and Validation
 
 Before training, run the launcher with `--prepare-only`. This downloads only Roboflow dataset version 1, validates `data.yaml`, split paths, class 0 (`fire`), image/label presence, and every YOLO label's five fields and normalized coordinates. It prints split counts and the dataset location, then exits without loading a YOLO model, training, or validation inference.
+
+The first dataset preparation run downloaded the expected split directories but failed because the exported `data.yaml` contained `../train/images`, `../valid/images`, and `../test/images`, which resolved outside the returned dataset root. The launcher now preserves that original file and creates `data.exp001-normalized.yaml` with verified absolute split paths. Both preparation validation and full training use the normalized file.
