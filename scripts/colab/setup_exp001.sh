@@ -36,10 +36,11 @@ uv pip install --python "${PYTHON}" \
 uv pip install --python "${PYTHON}" \
   --constraint "${CONSTRAINTS}" \
   --index-url "${PYTORCH_INDEX}" \
+  --no-deps \
   "torch==2.0.1+cu118" "torchvision==0.15.2+cu118"
 
-# Resolve general dependencies from PyPI under the core-stack constraints.
-# The CUDA index is intentionally scoped to the torch/torchvision step above.
+# Resolve all runtime dependencies from PyPI under the core-stack constraints.
+# The CUDA index above supplies only the two --no-deps wheel artifacts.
 uv pip install --python "${PYTHON}" \
   --constraint "${CONSTRAINTS}" \
   "ultralytics==8.0.20" "roboflow==1.4.1" "python-dotenv==1.2.3"

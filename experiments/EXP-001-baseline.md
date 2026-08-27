@@ -92,3 +92,10 @@ Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction depende
 - Roboflow `1.4.1` requires `idna>=3.7`; requests `2.28.1` permits `idna>=2.5,<4`, so the packages have a compatible intersection.
 - This was an index-scoping failure, not a Roboflow/Ultralytics incompatibility.
 - Training was not run.
+
+### Attempt 4
+
+- Dependency resolution failed during the torch/torchvision installation step.
+- Torchvision's general dependencies, including requests and idna, were incorrectly resolved against the PyTorch CUDA 11.8 index.
+- The failure did not invalidate `idna==3.10`; it exposed that the CUDA index still had transitive dependency scope.
+- Training was not run.
