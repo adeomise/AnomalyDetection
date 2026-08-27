@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.venv-baseline/
 venv/
 env/
 
@@ -23,6 +24,7 @@ data/processed/*
 data/negatives/*
 data/splits/*
 runs/
+artifacts/
 
 # Model weights
 *.pt

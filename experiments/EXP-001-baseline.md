@@ -24,9 +24,9 @@ Pretrained weight: `yolov8m.pt`; output `runs/detect/train/weights/best.pt`
 
 Image size: `800`
 Epochs: `50`
-Batch size: TODO
-Optimizer: TODO
-Learning rate: TODO
+Batch size: `16` (resolved upstream training output)
+Optimizer: TODO - not specified by upstream command
+Learning rate: TODO - not specified by upstream command
 
 ## Changes from Original
 
@@ -41,7 +41,22 @@ mAP50-95: TODO
 
 ## Reproduction Status
 
-Not ready - environment, exported dataset structure, license, and reproducible dependency details remain incomplete.
+Not ready - local environment, exported dataset structure, license, and reproducible dependency details remain incomplete.
+
+## Environment Checklist
+
+- [ ] Python reproduction version selected
+- [ ] Isolated virtual environment created
+- [ ] PyTorch version selected
+- [ ] GPU available from PyTorch
+- [ ] Ultralytics 8.0.20 installed
+- [ ] Roboflow client available
+- [ ] Dataset version 1 downloaded
+- [ ] `data.yaml` inspected
+- [ ] train/valid/test split verified
+- [ ] Class ID verified
+- [ ] `yolov8m.pt` source confirmed
+- [x] Upstream code remains unchanged
 
 ## Notes
 

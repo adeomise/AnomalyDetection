@@ -52,14 +52,14 @@ Required items to verify:
 
 Model: `yolov8m.pt`
 Epochs: `50`
-Batch size: Not specified
+Batch size: `16` (resolved training output; not explicit in the command)
 Image size: `800`
-Optimizer: TODO — verify
-Learning rate: TODO — verify
+Optimizer: Not specified
+Learning rate: Not specified
 Augmentation: TODO — verify
-Patience: Not specified
-Workers: Not specified
-Device: Notebook checks `nvidia-smi`; explicit training device is not specified
+Patience: `50` (resolved training output)
+Workers: `8` (resolved training output)
+Device: Notebook checks `nvidia-smi`; resolved training output shows `device=` (automatic selection)
 Confidence threshold: `0.25` for test-image prediction
 IoU threshold: Not specified
 
