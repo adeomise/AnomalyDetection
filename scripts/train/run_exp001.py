@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -19,6 +21,12 @@ EXPECTED_ULTRALYTICS = "8.0.20"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 IMAGE_SUFFIXES = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 NORMALIZED_DATA_YAML = "data.exp001-normalized.yaml"
+RESULTS_CSV_METRICS = {
+    "precision": "metrics/precision(B)",
+    "recall": "metrics/recall(B)",
+    "map50": "metrics/mAP50(B)",
+    "map50_95": "metrics/mAP50-95(B)",
+}
 
 
 def load_config(config_path: Path) -> dict[str, Any]:
@@ -202,6 +210,93 @@ def file_metadata(path: Path) -> dict[str, Any]:
     return {"path": str(path), "size_bytes": path.stat().st_size, "sha256": digest}
 
 
+def collect_training_outputs(model: Any) -> tuple[Path, dict[str, float]]:
+    trainer = getattr(model, "trainer", None)
+    if trainer is None:
+        raise RuntimeError("Ultralytics trainer state is unavailable after training.")
+
+    save_dir = Path(trainer.save_dir)
+    best_path = Path(getattr(trainer, "best", save_dir / "weights" / "best.pt"))
+    if not best_path.is_file():
+        raise FileNotFoundError(f"Training completed without best.pt: {best_path}")
+
+    trainer_metrics = getattr(trainer, "metrics", None)
+    if not isinstance(trainer_metrics, dict):
+        raise RuntimeError("Ultralytics trainer metrics are unavailable after final validation.")
+    missing = [source for source in RESULTS_CSV_METRICS.values() if source not in trainer_metrics]
+    if missing:
+        raise RuntimeError(f"Ultralytics trainer metrics are missing: {', '.join(missing)}")
+    metrics = {name: float(trainer_metrics[source]) for name, source in RESULTS_CSV_METRICS.items()}
+    return best_path, metrics
+
+
+def read_best_csv_metrics(results_csv: Path) -> tuple[int, dict[str, float]]:
+    if not results_csv.is_file():
+        raise FileNotFoundError(f"Ultralytics results.csv does not exist: {results_csv}")
+    with results_csv.open(encoding="utf-8", newline="") as file:
+        rows = [{key.strip(): value.strip() for key, value in row.items()} for row in csv.DictReader(file)]
+    required = {"epoch", *RESULTS_CSV_METRICS.values()}
+    if not rows:
+        raise ValueError(f"Ultralytics results.csv contains no metric rows: {results_csv}")
+    missing = required.difference(rows[0])
+    if missing:
+        raise ValueError(f"Ultralytics results.csv is missing columns: {', '.join(sorted(missing))}")
+
+    candidates: list[tuple[float, int, dict[str, float]]] = []
+    for row_number, row in enumerate(rows, 2):
+        try:
+            epoch = int(float(row["epoch"]))
+            metrics = {name: float(row[column]) for name, column in RESULTS_CSV_METRICS.items()}
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid numeric metric in {results_csv}:{row_number}") from exc
+        if not all(math.isfinite(value) for value in metrics.values()):
+            raise ValueError(f"Non-finite metric in {results_csv}:{row_number}")
+        fitness = 0.1 * metrics["map50"] + 0.9 * metrics["map50_95"]
+        candidates.append((fitness, epoch, metrics))
+    _, best_epoch, best_metrics = max(candidates, key=lambda candidate: (candidate[0], candidate[1]))
+    return best_epoch, best_metrics
+
+
+def write_result(summary: dict[str, Any]) -> Path:
+    result_path = PROJECT_ROOT / "artifacts" / "exp001" / "result.json"
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    result_path.write_text(json.dumps(summary, indent=2, default=float), encoding="utf-8")
+    print(json.dumps(summary, indent=2, default=float))
+    return result_path
+
+
+def finalize_run(run_dir: Path, config: dict[str, Any], config_path: Path) -> None:
+    run_dir = (run_dir if run_dir.is_absolute() else PROJECT_ROOT / run_dir).resolve()
+    if not run_dir.is_dir():
+        raise FileNotFoundError(f"Ultralytics run directory does not exist: {run_dir}")
+    best_path = run_dir / "weights" / "best.pt"
+    if not best_path.is_file():
+        raise FileNotFoundError(f"Ultralytics best.pt does not exist: {best_path}")
+    results_csv = run_dir / "results.csv"
+    best_epoch, metrics = read_best_csv_metrics(results_csv)
+    summary = {
+        "experiment_id": config["experiment_id"],
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "run_dir": str(run_dir),
+        "best_pt": file_metadata(best_path),
+        "metrics": metrics,
+        "metrics_source": {
+            "path": str(results_csv),
+            "selected_epoch_index": best_epoch,
+            "selected_epoch_number": best_epoch + 1,
+            "selection": "Ultralytics 8.0.20 fitness: 0.1*mAP50 + 0.9*mAP50-95",
+        },
+        "provenance": {
+            "config": file_metadata(config_path),
+            "dataset": config["dataset"],
+            "classes": config["classes"],
+            "training": config["training"],
+            "model": config["model"],
+        },
+    }
+    write_result(summary)
+
+
 def dry_run(config: dict[str, Any], config_path: Path) -> None:
     print("EXP-001 dry-run: PASS")
     print(json.dumps({"config": str(config_path), "planned": config}, indent=2))
@@ -213,11 +308,15 @@ def main() -> None:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--prepare-only", action="store_true")
+    mode.add_argument("--finalize-run", type=Path)
     args = parser.parse_args()
     config_path = args.config if args.config.is_absolute() else PROJECT_ROOT / args.config
     config = load_config(config_path)
     if args.dry_run:
         dry_run(config, config_path)
+        return
+    if args.finalize_run is not None:
+        finalize_run(args.finalize_run, config, config_path)
         return
 
     run_verification()
@@ -245,11 +344,8 @@ def main() -> None:
     training = config["training"]
     model_path = config["model"]["pretrained"]
     model = YOLO(model_path)
-    results = model.train(data=str(data_yaml), **training)
-    best_path = Path(results.save_dir) / "weights" / "best.pt"
-    if not best_path.is_file():
-        raise FileNotFoundError(f"Training completed without best.pt: {best_path}")
-    metrics = model.val(data=str(data_yaml))
+    model.train(data=str(data_yaml), **training)
+    best_path, metrics = collect_training_outputs(model)
     summary = {
         "experiment_id": config["experiment_id"],
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -259,12 +355,9 @@ def main() -> None:
         "ultralytics": __version__,
         "gpu": __import__("torch").cuda.get_device_name(0),
         "best_pt": file_metadata(best_path),
-        "metrics": {name: getattr(metrics.box, name, None) for name in ("mp", "mr", "map50", "map")},
+        "metrics": metrics,
     }
-    result_path = PROJECT_ROOT / "artifacts" / "exp001" / "result.json"
-    result_path.parent.mkdir(parents=True, exist_ok=True)
-    result_path.write_text(json.dumps(summary, indent=2, default=float), encoding="utf-8")
-    print(json.dumps(summary, indent=2, default=float))
+    write_result(summary)
 
 
 if __name__ == "__main__":
