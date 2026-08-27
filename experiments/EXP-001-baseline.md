@@ -61,3 +61,12 @@ Not ready - local environment, exported dataset structure, license, and reproduc
 ## Notes
 
 TODO: Obtain and verify the Roboflow export, environment details, and license status before running EXP-001. See `docs/baseline_analysis.md` for source findings. Upstream source remains read-only during this experiment.
+
+### Initial Colab automation test
+
+- Python 3.10.21 provisioning succeeded.
+- torch 2.0.1+cu118 was initially installed.
+- Later dependency resolution upgraded torch to 2.13.0+cu130.
+- ultralytics 8.0.20 import failed because pkg_resources was unavailable.
+- Verification correctly returned FAIL.
+- Training was not executed.

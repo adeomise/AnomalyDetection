@@ -116,6 +116,17 @@ Based on the upstream notebooks, these belong to later inference or video annota
 
 Current status: **Not Ready**
 
+## Initial Colab Automation Test
+
+- Python 3.10.21 provisioning succeeded.
+- torch 2.0.1+cu118 was initially installed.
+- Later dependency resolution upgraded torch to 2.13.0+cu130.
+- ultralytics 8.0.20 import failed because pkg_resources was unavailable.
+- Verification correctly returned FAIL.
+- Training was not executed.
+
+The EXP-001 automation now constrains every install to torch `2.0.1+cu118`, torchvision `0.15.2+cu118`, NumPy `1.26.4`, Ultralytics `8.0.20`, and setuptools `<82`. The torch/torchvision pair is the official PyTorch CUDA 11.8 wheel combination for PyTorch 2.0.1. NumPy stays on 1.x because NumPy 2.0 introduced an ABI break for extensions compiled against NumPy 1.x. Setuptools stays below 82 because version 82 removed `pkg_resources` from distributions.
+
 Ready for environment creation requires a selected Python candidate, a PyTorch/CUDA strategy, and a documented dependency plan. Ready for training additionally requires the isolated environment, package checks, dataset inspection, class verification, split verification, and pretrained weight source confirmation. Training is intentionally not performed in this step.
 
 TODO: After the candidate is approved, create the isolated environment and record its exact package resolution in a separate environment artifact. Do not put unverified versions into the root `requirements.txt`.
