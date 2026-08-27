@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import platform
 import sys
 
@@ -13,6 +14,8 @@ EXPECTED_TORCHVISION = "0.15.2+cu118"
 EXPECTED_TORCH_CUDA = "11.8"
 EXPECTED_ULTRALYTICS = "8.0.20"
 EXPECTED_NUMPY = "1.26.4"
+EXPECTED_ROBOFLOW = "1.4.1"
+EXPECTED_PYTHON_DOTENV = "1.2.3"
 
 
 def fail(message: str) -> None:
@@ -83,6 +86,29 @@ def main() -> None:
     except Exception as exc:
         fail(f"Roboflow is not importable: {exc}")
     print("Roboflow import: available")
+
+    try:
+        roboflow_version = importlib.metadata.version("roboflow")
+    except importlib.metadata.PackageNotFoundError:
+        fail("Roboflow distribution metadata is unavailable.")
+    print("Roboflow version:", roboflow_version)
+    if roboflow_version != EXPECTED_ROBOFLOW:
+        fail(f"Roboflow {EXPECTED_ROBOFLOW} is required; found {roboflow_version}.")
+
+    try:
+        importlib.import_module("dotenv")
+    except Exception as exc:
+        fail(f"dotenv is not importable: {exc}")
+    print("dotenv import: available")
+
+    try:
+        python_dotenv_version = importlib.metadata.version("python-dotenv")
+    except importlib.metadata.PackageNotFoundError:
+        fail("python-dotenv distribution metadata is unavailable.")
+    print("python-dotenv version:", python_dotenv_version)
+    if python_dotenv_version != EXPECTED_PYTHON_DOTENV:
+        fail(f"python-dotenv {EXPECTED_PYTHON_DOTENV} is required; found {python_dotenv_version}.")
+
     print("environment verification: PASS")
 
 

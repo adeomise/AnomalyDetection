@@ -42,12 +42,12 @@ uv pip install --python "${PYTHON}" \
 uv pip install --python "${PYTHON}" \
   --constraint "${CONSTRAINTS}" \
   --extra-index-url "${PYTORCH_INDEX}" \
-  "ultralytics==8.0.20" "roboflow"
+  "ultralytics==8.0.20" "roboflow==1.4.1" "python-dotenv==1.2.3"
 
 uv pip check --python "${PYTHON}"
 
 echo "Installed versions:"
-"${PYTHON}" -c 'import sys, torch, torchvision, ultralytics; print("Python:", sys.version); print("PyTorch:", torch.__version__); print("Torchvision:", torchvision.__version__); print("Torch CUDA:", torch.version.cuda); print("Ultralytics:", ultralytics.__version__)'
+"${PYTHON}" -c 'import sys, torch, torchvision, ultralytics; from importlib.metadata import version; print("Python:", sys.version); print("PyTorch:", torch.__version__); print("Torchvision:", torchvision.__version__); print("Torch CUDA:", torch.version.cuda); print("Ultralytics:", ultralytics.__version__); print("Roboflow:", version("roboflow")); print("python-dotenv:", version("python-dotenv"))'
 
 "${PYTHON}" "${SCRIPT_DIR}/verify_exp001.py"
 echo "Environment setup: PASS"

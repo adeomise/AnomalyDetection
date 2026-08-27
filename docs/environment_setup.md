@@ -127,6 +127,20 @@ Current status: **Not Ready**
 
 The EXP-001 automation now constrains every install to torch `2.0.1+cu118`, torchvision `0.15.2+cu118`, NumPy `1.26.4`, Ultralytics `8.0.20`, and setuptools `<82`. The torch/torchvision pair is the official PyTorch CUDA 11.8 wheel combination for PyTorch 2.0.1. NumPy stays on 1.x because NumPy 2.0 introduced an ABI break for extensions compiled against NumPy 1.x. Setuptools stays below 82 because version 82 removed `pkg_resources` from distributions.
 
+### Attempt 2
+
+- Python 3.10.21 PASS
+- torch 2.0.1+cu118 PASS
+- torchvision 0.15.2+cu118 PASS
+- CUDA 11.8 PASS
+- NumPy 1.26.4 PASS
+- Tesla T4 PASS
+- Ultralytics 8.0.20 PASS
+- Roboflow FAIL: missing dotenv
+- Training not run
+
+Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction dependencies selected after Attempt 2. The upstream notebook did not specify their versions.
+
 Ready for environment creation requires a selected Python candidate, a PyTorch/CUDA strategy, and a documented dependency plan. Ready for training additionally requires the isolated environment, package checks, dataset inspection, class verification, split verification, and pretrained weight source confirmation. Training is intentionally not performed in this step.
 
 TODO: After the candidate is approved, create the isolated environment and record its exact package resolution in a separate environment artifact. Do not put unverified versions into the root `requirements.txt`.

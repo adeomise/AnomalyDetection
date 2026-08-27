@@ -70,3 +70,17 @@ TODO: Obtain and verify the Roboflow export, environment details, and license st
 - ultralytics 8.0.20 import failed because pkg_resources was unavailable.
 - Verification correctly returned FAIL.
 - Training was not executed.
+
+### Attempt 2
+
+- Python 3.10.21 PASS
+- torch 2.0.1+cu118 PASS
+- torchvision 0.15.2+cu118 PASS
+- CUDA 11.8 PASS
+- NumPy 1.26.4 PASS
+- Tesla T4 PASS
+- Ultralytics 8.0.20 PASS
+- Roboflow FAIL: missing dotenv
+- Training not run
+
+Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction dependencies. Their versions were not specified by the upstream notebook.
