@@ -17,6 +17,7 @@ import yaml
 
 EXPECTED_ULTRALYTICS = "8.0.20"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+IMAGE_SUFFIXES = {".bmp", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 
 
 def load_config(config_path: Path) -> dict[str, Any]:
@@ -96,6 +97,66 @@ def verify_labels(dataset: dict[str, Any], data_yaml: Path) -> None:
             raise ValueError(f"Invalid normalized label in {sample}:{line_number}")
 
 
+def validate_label_file(label_path: Path) -> None:
+    for line_number, line in enumerate(label_path.read_text(encoding="utf-8").splitlines(), 1):
+        fields = line.split()
+        if len(fields) != 5:
+            raise ValueError(f"Invalid YOLO label fields in {label_path}:{line_number}; expected 5.")
+        try:
+            class_id = int(fields[0])
+            coordinates = [float(value) for value in fields[1:]]
+        except ValueError as exc:
+            raise ValueError(f"Non-numeric YOLO label in {label_path}:{line_number}.") from exc
+        if class_id != 0:
+            raise ValueError(f"Expected class 0 in {label_path}:{line_number}; found {class_id}.")
+        if any(value < 0 or value > 1 for value in coordinates):
+            raise ValueError(f"Coordinates are outside [0, 1] in {label_path}:{line_number}.")
+
+
+def validate_split(split_name: str, images_root: Path) -> tuple[int, int]:
+    if not images_root.is_dir():
+        raise FileNotFoundError(f"Dataset {split_name} image directory does not exist: {images_root}")
+    labels_root = images_root.parent / "labels" if images_root.name == "images" else images_root / "labels"
+    if not labels_root.is_dir():
+        raise FileNotFoundError(f"Dataset {split_name} label directory does not exist: {labels_root}")
+
+    image_files = sorted(path for path in images_root.rglob("*") if path.suffix.lower() in IMAGE_SUFFIXES)
+    label_files = sorted(labels_root.rglob("*.txt"))
+    if not image_files:
+        raise ValueError(f"No images found in {images_root}")
+    if not label_files:
+        raise ValueError(f"No labels found in {labels_root}")
+    for label_path in label_files:
+        validate_label_file(label_path)
+
+    print(f"{split_name}: images={len(image_files)}, labels={len(label_files)}")
+    return len(image_files), len(label_files)
+
+
+def validate_prepared_dataset(data_yaml: Path, config: dict[str, Any]) -> None:
+    dataset = validate_dataset(data_yaml, config)
+    validation_key = "val" if "val" in dataset else "valid"
+    split_keys = ["train", validation_key]
+    if "test" in dataset:
+        split_keys.append("test")
+    for split_name in split_keys:
+        validate_split(split_name, resolve_path(str(dataset[split_name]), data_yaml))
+
+
+def download_dataset(config: dict[str, Any], api_key: str) -> Path:
+    from roboflow import Roboflow
+
+    dataset_config = config["dataset"]
+    dataset = (
+        Roboflow(api_key=api_key)
+        .workspace(dataset_config["workspace"])
+        .project(dataset_config["project"])
+        .version(dataset_config["version"])
+        .download(dataset_config["format"])
+    )
+    return Path(dataset.location) / "data.yaml"
+
+
 def run_verification() -> None:
     script = PROJECT_ROOT / "scripts" / "colab" / "verify_exp001.py"
     subprocess.run([sys.executable, str(script)], check=True)
@@ -114,7 +175,9 @@ def dry_run(config: dict[str, Any], config_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True, type=Path)
-    parser.add_argument("--dry-run", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", action="store_true")
+    mode.add_argument("--prepare-only", action="store_true")
     args = parser.parse_args()
     config_path = args.config if args.config.is_absolute() else PROJECT_ROOT / args.config
     config = load_config(config_path)
@@ -127,20 +190,18 @@ def main() -> None:
     if not api_key:
         raise RuntimeError("ROBOFLOW_API_KEY is not set; training is stopped.")
 
-    from roboflow import Roboflow
+    data_yaml = download_dataset(config, api_key)
+    if args.prepare_only:
+        validate_prepared_dataset(data_yaml, config)
+        print("Dataset location:", data_yaml.parent)
+        print("EXP-001 dataset preparation: PASS")
+        return
+
     from ultralytics import YOLO, __version__
 
     if __version__ != EXPECTED_ULTRALYTICS:
         raise RuntimeError(f"Ultralytics {EXPECTED_ULTRALYTICS} is required; found {__version__}.")
     dataset_config = config["dataset"]
-    dataset = (
-        Roboflow(api_key=api_key)
-        .workspace(dataset_config["workspace"])
-        .project(dataset_config["project"])
-        .version(dataset_config["version"])
-        .download(dataset_config["format"])
-    )
-    data_yaml = Path(dataset.location) / "data.yaml"
     dataset_values = validate_dataset(data_yaml, config)
     verify_labels(dataset_values, data_yaml)
 

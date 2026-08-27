@@ -99,3 +99,7 @@ Roboflow `1.4.1` and python-dotenv `1.2.3` are project-side reproduction depende
 - Torchvision's general dependencies, including requests and idna, were incorrectly resolved against the PyTorch CUDA 11.8 index.
 - The failure did not invalidate `idna==3.10`; it exposed that the CUDA index still had transitive dependency scope.
 - Training was not run.
+
+## Dataset Preparation and Validation
+
+Before training, run the launcher with `--prepare-only`. This downloads only Roboflow dataset version 1, validates `data.yaml`, split paths, class 0 (`fire`), image/label presence, and every YOLO label's five fields and normalized coordinates. It prints split counts and the dataset location, then exits without loading a YOLO model, training, or validation inference.
