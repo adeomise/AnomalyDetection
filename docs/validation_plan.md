@@ -1,15 +1,35 @@
 # Validation Plan
 
-## Stage 1 - Dataset Test
+## Completed Baseline Evidence
 
-Evaluate Precision, Recall, mAP@0.5, mAP@0.5:0.95, and the Confusion Matrix on a test set that was not used for training or tuning.
+EXP-001 dataset validation, 50-epoch training, best-checkpoint validation, and result finalization are complete. The metrics and checkpoint checksum are recorded in [EXP-001-baseline.md](../experiments/EXP-001-baseline.md).
 
-## Stage 2 - Controlled Validation
+This does not establish real-time performance. FPS, latency, streaming stability, field false positives, and field false negatives remain unmeasured.
 
-Use safely obtained controlled or field-validation video to check behavior on realistic input. Record the input conditions, model version, dataset version, and observations.
+## A/B/C Integration Smoke Test
 
-## Stage 3 - Realtime Pipeline
+After model, environment, and real-time code are combined, record evidence for every item:
 
-Measure FPS, latency, detection stability, false positives, and false negatives across representative streaming conditions.
+- [ ] provided `best.pt` exists and its SHA-256 matches the handoff;
+- [ ] checkpoint loads with the configured model path;
+- [ ] missing/unreadable checkpoint fails before capture begins;
+- [ ] class mapping is exactly `0=fire`;
+- [ ] sample image inference completes;
+- [ ] a valid empty-detection result is handled without error;
+- [ ] consecutive OpenCV video frames are processed;
+- [ ] bounding boxes remain inside frame bounds and render correctly;
+- [ ] confidence renders for each displayed detection;
+- [ ] FPS or per-frame latency is measured and displayed/logged;
+- [ ] end-of-stream and capture failure terminate or recover predictably;
+- [ ] no API key, token, or credential-bearing stream URL is logged.
 
-TODO: Define acceptance criteria and test cases. No measurements are available yet.
+The real-time pipeline is not implemented, so this checklist is currently TODO.
+
+## Later Validation Stages
+
+1. Controlled video: representative distance, smoke/fire size, lighting, motion, and background.
+2. Streaming reliability: reconnect, dropped frames, varying resolution, and sustained runtime.
+3. Error analysis: false positives, false negatives, hard negatives, and detection stability.
+4. Performance: FPS and latency on the actual integration laptop.
+
+Acceptance thresholds must be agreed before claiming real-time readiness. EXP-006 threshold tuning is a candidate experiment, not completed work.
