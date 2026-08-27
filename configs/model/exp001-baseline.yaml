@@ -1,0 +1,20 @@
+experiment_id: EXP-001
+
+model:
+  pretrained: yolov8m.pt
+
+training:
+  epochs: 50
+  imgsz: 800
+  batch: 16
+  patience: 50
+  workers: 8
+
+dataset:
+  workspace: tim-4ijf0
+  project: drone-fire-detection-byija
+  version: 1
+  format: yolov8
+
+classes:
+  0: fire
