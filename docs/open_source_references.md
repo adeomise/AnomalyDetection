@@ -13,10 +13,10 @@ Record every external repository, dataset, paper, or library that materially inf
 - YOLO version: YOLOv8
 - Framework: Ultralytics
 - Dataset: FLAME-derived Roboflow project `drone-fire-detection-byija`, version 1
-- Classes: `0: fire` (inference notebook; verify against generated YAML)
-- How it is used: Read-only reference during baseline analysis and reproduction
+- Classes: `0: fire`, confirmed by the EXP-001 dataset validation
+- How it is used: Read-only reference during the completed baseline reproduction
 - Changes made: None — original repository is used only as a read-only reference.
-- Notes: Training notebook uses `ultralytics==8.0.20`, `yolov8m.pt`, `epochs=50`, and `imgsz=800`. No license file was found. Any later integration modification requires a verified license permitting modification and redistribution. Prefer a wrapper, adapter, or independent implementation in this repository.
+- Notes: EXP-001 reproduced the training notebook's `ultralytics==8.0.20`, `yolov8m.pt`, `epochs=50`, and `imgsz=800` baseline. No license file was found. Any integration modification requires a verified license permitting modification and redistribution. Prefer a wrapper, adapter, or independent implementation in this repository.
 
 ## Source Template
 
