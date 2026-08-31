@@ -1,2 +1,2 @@
-# TODO: Add verified dependencies and versions after the development environment is fixed.
-# Python, PyTorch, CUDA, Ultralytics, and OpenCV versions are intentionally not pinned yet.
+ultralytics>=8.2.0
+opencv-python>=4.8.0

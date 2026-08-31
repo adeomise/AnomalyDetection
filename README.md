@@ -145,9 +145,10 @@ See [data handling](docs/data_guide.md), [open-source references](docs/open_sour
 | --- | --- |
 | EXP-001 baseline reproduction | Completed and verified |
 | Colab setup/verifier | Completed and verified |
-| Dataset preparation/validation | Completed for EXP-001 |
+| Dataset preparation/validation | Completed and verified |
 | Final checkpoint handoff metadata | Completed; binary distributed outside Git |
-| OpenCV real-time inference | TODO |
-| Smartphone/drone streaming method | TODO |
-| A/B/C integration smoke test | TODO |
-| Follow-up experiments | Candidates only; not run |
+| OpenCV real-time inference | Completed and verified |
+| Smartphone streaming method | Completed and verified |
+| Dataset ↔ baseline smoke test | Completed and verified |
+| Drone control integration | Pending / team implementation |
+| Follow-up experiments | Optional |
