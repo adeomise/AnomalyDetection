@@ -54,7 +54,6 @@ The checkpoint itself is not stored in Git. Transfer it through the team-approve
 Colab notebooks:
 
 - Participant starter: [`colab/participant-baseline.ipynb`](colab/participant-baseline.ipynb)
-- EXP-001 reproduction: [`colab/EXP-001-baseline.ipynb`](colab/EXP-001-baseline.ipynb)
 
 ## Quick Start
 
