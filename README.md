@@ -45,11 +45,16 @@ The checkpoint itself is not stored in Git. Transfer it through the team-approve
 | `data/` | Local raw/intermediate/processed/split data locations; large data is ignored |
 | `models/` | Local pretrained/checkpoint locations; weights are ignored |
 | `experiments/` | Immutable experiment intent, configuration, attempts, and final results |
-| `colab/` | EXP-001 Colab notebook |
+| `colab/` | Participant starter and EXP-001 reproduction notebooks |
 | `docs/` | Environment, data, training, real-time, validation, architecture, and attribution guides |
 | `external/` | External-source provenance records; upstream code is not project-owned code |
 | `tests/` | Automated tests as integration components are implemented |
 | `assets/` | Small documentation and demo assets only |
+
+Colab notebooks:
+
+- Participant starter: [`colab/participant-baseline.ipynb`](colab/participant-baseline.ipynb)
+- EXP-001 reproduction: [`colab/EXP-001-baseline.ipynb`](colab/EXP-001-baseline.ipynb)
 
 ## Quick Start
 
